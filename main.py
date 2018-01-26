@@ -22,8 +22,8 @@ def check_for_objects():
 			if found_obj and (time.time() - last_epoch) > email_update_interval:
 				last_epoch = time.time()
 				print "Sending email..."
-                print "x:" + xLocation
-                print "y:" + yLocation
+                print "x:"  str(xLocation)
+                print "y:" + str(yLocation)
 				sendEmail(frame)
 				print "done!"
 		except:
