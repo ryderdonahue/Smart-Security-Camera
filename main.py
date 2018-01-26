@@ -6,9 +6,9 @@ from camera import VideoCamera
 import time
 import threading
 
-email_update_interval = 600 # sends an email only once in this time interval
+email_update_interval = 1 # sends an email only once in this time interval
 video_camera = VideoCamera(flip=True) # creates a camera object, flip vertically
-object_classifier = cv2.CascadeClassifier("models/fullbody_recognition_model.xml") # an opencv classifier
+object_classifier = cv2.CascadeClassifier("models/upperbody_recognition_model.xml") # an opencv classifier
 
 # App Globals (do not edit)
 app = Flask(__name__)
@@ -18,10 +18,12 @@ def check_for_objects():
 	global last_epoch
 	while True:
 		try:
-			frame, found_obj = video_camera.get_object(object_classifier)
+			frame, found_obj, xLocation, yLocation = video_camera.get_object(object_classifier)
 			if found_obj and (time.time() - last_epoch) > email_update_interval:
 				last_epoch = time.time()
 				print "Sending email..."
+                print "x:" + xLocation
+                print "y:" + yLocation
 				sendEmail(frame)
 				print "done!"
 		except:
