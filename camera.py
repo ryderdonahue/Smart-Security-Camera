@@ -6,7 +6,7 @@ import numpy as np
 import pprint
 class VideoCamera(object):
     def __init__(self, flip = True):
-        self.vs = PiVideoStream().start()
+        self.vs = PiVideoStream((640,480)).start()
         self.vs.camera.vflip = True
 #        self.vs.camera.framerate = 30
         #self.vs.camera.exposure_mode = 'night'
@@ -30,29 +30,33 @@ class VideoCamera(object):
         ret, jpeg = cv2.imencode('.jpg', frame)
         return jpeg.tostring().tobytes()
 
-    def get_object(self, classifier):
+    def get_object(self, classifiers):
         found_objects = False
         xLocation = 0
         yLocation = 0
         frame = self.flip_if_needed(self.vs.read()).copy() 
 #	print(frame[1].size
-#	height, width = frame.shape[:2]
-       # print width
-#	print height
+	height, width = frame.shape[:2]
+        #print width
+	#print height
 #	small = cv2.resize(frame, (width/2, height/2), interpolation = cv2.INTER_AREA)
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-        objects = classifier.detectMultiScale(
-            gray,
-            scaleFactor=1.1,
-            minNeighbors=5,
-            minSize=(30, 30),
-            flags=cv2.CASCADE_SCALE_IMAGE
-        )
-
-        if len(objects) > 0:
-            found_objects = True
-
+	classifier_used = -1
+        for i in range(len(classifiers)):     
+            objects = classifiers[i].detectMultiScale(
+                gray,
+                scaleFactor=1.1,
+                minNeighbors=5,
+                minSize=(64, 64),
+                flags=cv2.CASCADE_SCALE_IMAGE
+            )
+            if len(objects) > 0:
+                found_objects = True
+                print 'found with %s' % i
+                classifier_used = i
+                break
+    
+        
 
         # Draw a rectangle around the objects
         for (x, y, w, h) in objects:
@@ -61,6 +65,6 @@ class VideoCamera(object):
             yLocation = y
         
         ret, jpeg = cv2.imencode('.jpg', frame)
-        return (jpeg.tobytes(), found_objects, xLocation, yLocation)
+        return (jpeg.tobytes(), found_objects, xLocation, yLocation, classifier_used, width, height)
 
 
